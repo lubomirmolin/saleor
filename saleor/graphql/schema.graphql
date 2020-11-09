@@ -4437,7 +4437,7 @@ input ShippingZoneUpdateInput {
 
 type Shop {
   availablePaymentGateways(currency: String): [PaymentGateway!]!
-  geolocalization: Geolocalization
+  geolocalization: Geolocalization @deprecated(reason: "Server-side geolocalization is deprecated.")
   authorizationKeys: [AuthorizationKey]!
   countries(languageCode: LanguageCodeEnum): [CountryDisplay!]!
   currencies: [String]! @deprecated(reason: "This field will be removed in Saleor 3.0")
