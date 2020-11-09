@@ -8,6 +8,7 @@ All notable, unreleased changes to this project will be documented in this file.
 - Drop deprecated meta mutations - #6422 by @maarcingebala
 - Migrate draftjs content to editorjs format - by @IKarbowiak #6430
 - Drop deprecated fields from the `ProductVariant` type: `quantity`, `quantityAllocated`, `stockQuantity`, `isAvailable` - #6436 by @maarcingebala
+- Migrate draftjs content to editorjs format - by @IKarbowiak #6430
 
 ## 2.11.0
 
