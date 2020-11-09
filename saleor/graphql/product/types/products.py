@@ -182,9 +182,15 @@ class ProductVariant(CountableDjangoObjectType):
             "Use the pricing field to get the public price for customers."
         ),
     )
-
     pricing = graphene.Field(
         VariantPricingInfo,
+        country_code=graphene.Argument(
+            CountryCodeEnum,
+            description=(
+                "Country code used for tax calculations. If not provided, the default "
+                "country will be used."
+            ),
+        ),
         description=(
             "Lists the storefront variant's pricing, the current price and discounts, "
             "only meant for displaying."
@@ -251,7 +257,7 @@ class ProductVariant(CountableDjangoObjectType):
     @one_of_permissions_required(
         [ProductPermissions.MANAGE_PRODUCTS, OrderPermissions.MANAGE_ORDERS]
     )
-    def resolve_stocks(root: models.ProductVariant, info, country_code=None):
+    def resolve_stocks(root: models.ProductVariant, _info, country_code=None):
         if not country_code:
             return root.stocks.annotate_available_quantity()
         return root.stocks.for_country(country_code).annotate_available_quantity()
@@ -292,10 +298,13 @@ class ProductVariant(CountableDjangoObjectType):
         return root.price
 
     @staticmethod
-    def resolve_pricing(root: models.ProductVariant, info):
+    def resolve_pricing(root: models.ProductVariant, info, country_code=None):
         context = info.context
         product = ProductByIdLoader(context).load(root.product_id)
         collections = CollectionsByProductIdLoader(context).load(root.product_id)
+
+        if not country_code:
+            country_code = settings.DEFAULT_COUNTRY
 
         def calculate_pricing_info(discounts):
             def calculate_pricing_with_product(product):
@@ -305,7 +314,7 @@ class ProductVariant(CountableDjangoObjectType):
                         product=product,
                         collections=collections,
                         discounts=discounts,
-                        country=context.country,
+                        country=country_code,
                         local_currency=context.currency,
                         plugins=context.plugins,
                     )
@@ -374,13 +383,28 @@ class Product(CountableDjangoObjectType):
     )
     pricing = graphene.Field(
         ProductPricingInfo,
+        country_code=graphene.Argument(
+            CountryCodeEnum,
+            description=(
+                "Country code used for tax calculations. If not provided, the default "
+                "country will be used."
+            ),
+        ),
         description=(
             "Lists the storefront product's pricing, the current price and discounts, "
             "only meant for displaying."
         ),
     )
     is_available = graphene.Boolean(
-        description="Whether the product is in stock and visible or not."
+        country_code=graphene.Argument(
+            CountryCodeEnum,
+            description=(
+                "Country code used to determine stock availability in warehouse that "
+                "ships to customer's country. If not provided, the default country "
+                "will be used."
+            ),
+        ),
+        description="Whether the product is in stock and visible or not.",
     )
     minimal_variant_price = graphene.Field(
         Money, description="The price of the cheapest variant (including discounts)."
@@ -480,10 +504,13 @@ class Product(CountableDjangoObjectType):
         return ""
 
     @staticmethod
-    def resolve_pricing(root: models.Product, info):
+    def resolve_pricing(root: models.Product, info, country_code=None):
         context = info.context
         variants = ProductVariantsByProductIdLoader(context).load(root.id)
         collections = CollectionsByProductIdLoader(context).load(root.id)
+
+        if not country_code:
+            country_code = settings.DEFAULT_COUNTRY
 
         def calculate_pricing_info(discounts):
             def calculate_pricing_with_variants(variants):
@@ -493,7 +520,7 @@ class Product(CountableDjangoObjectType):
                         variants=variants,
                         collections=collections,
                         discounts=discounts,
-                        country=context.country,
+                        country=country_code,
                         local_currency=context.currency,
                         plugins=context.plugins,
                     )
@@ -510,9 +537,10 @@ class Product(CountableDjangoObjectType):
         )
 
     @staticmethod
-    def resolve_is_available(root: models.Product, info):
-        country = info.context.country
-        in_stock = is_product_in_stock(root, country)
+    def resolve_is_available(root: models.Product, _info, country_code=None):
+        if not country_code:
+            country_code = settings.DEFAULT_COUNTRY
+        in_stock = is_product_in_stock(root, country_code)
         return root.is_visible and in_stock
 
     @staticmethod

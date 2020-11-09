@@ -151,7 +151,7 @@ def get_product_availability(
     variants: Iterable[ProductVariant],
     collections: Iterable[Collection],
     discounts: Iterable[DiscountInfo],
-    country: Optional[str] = None,
+    country: str,
     local_currency: Optional[str] = None,
     plugins: Optional["PluginsManager"] = None,
 ) -> ProductAvailability:
@@ -216,7 +216,7 @@ def get_variant_availability(
     product: Product,
     collections: Iterable[Collection],
     discounts: Iterable[DiscountInfo],
-    country: Optional[str] = None,
+    country: str,
     local_currency: Optional[str] = None,
     plugins: Optional["PluginsManager"] = None,
 ) -> VariantAvailability:
@@ -242,9 +242,6 @@ def get_variant_availability(
         )
 
         discount = _get_total_discount(undiscounted, discounted)
-
-        if country is None:
-            country = settings.DEFAULT_COUNTRY
 
         if local_currency:
             price_local_currency = to_local_currency(discounted, local_currency)

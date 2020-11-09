@@ -70,7 +70,6 @@ Saleor is a rapidly-growing open source e-commerce platform that has served high
 - **Orders**: A comprehensive system for orders, dispatch, and refunds
 - **Cart**: Advanced payment and tax options, with full control over discounts and promotions
 - **Payments**: Flexible API architecture allows integration of any payment method. It comes with Braintree support out of the box.
-- **Geo-adaptive**: Automatic localized pricing. Over 20 local languages. Localized checkout experience by country.
 - **SEO**: Packed with features that get stores to a wider audience
 - **Cloud**: Optimized for deployments using Docker
 - **Analytics**: Server-side Google Analytics to report e-commerce metrics without affecting privacy
